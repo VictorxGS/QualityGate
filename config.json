@@ -5,7 +5,7 @@
 	"properties":{
 		"OrgId": {
 			"type":"string",
-			"id": "OrgId",
+			"id": "OrgfalseId",
 			"required":false
 		},
 		"metrics": {
@@ -39,7 +39,8 @@
 								"val": {
 									"type":"string",
 									"id": "val",
-									"required":false
+									"required":false,
+									"env" :"DEV"
 								}
 							}
 						}
