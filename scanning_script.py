@@ -9,64 +9,63 @@
 # Comando de execução do arquivo: python .\scanning_script.py .\config.json 'palavra0' 'palavra1' --white_list 'palavra 2' 'palavra 3' 
 
 # TO DO:
-# Verificar se o retorno da func white list é necessário
 # Testar filtragem da funcao separate (problema de falta de cobertura)
-# Resolver entrada de parâmetros
 
 import argparse
 from colorama import init, Fore
 
-init()
-
 def scan_white_list(white_list, linha):
-    if(len(white_list) != 0):
+    if(white_list is not None):
         for word in white_list:
             if word in linha:
                 linha = linha.replace(word, "")
-    return linha  #verficar se realmente é necessário retorno
+    return linha
 
 def scan_black_list(black_list, linha, i):
-    if(len(black_list) != 0):
+    if(black_list is not None):
         for word in black_list:
             if word in linha:
-                founds.append(f'{word} enconrada - linha {i}')
-                print(Fore.RED + f'ALERT: "{word}" encontrada - linha {i}', end="")
-                print(Fore.RESET)
+                founds.append(f'\'{word}\' encontrada - linha {i}')
+                print(Fore.RED + f'ALERT: \'{word}\' encontrada - linha {i}' + Fore.RESET)
 
 def separate_words(linha): #Testar essa funcao
     indesejados = ['\n', '\t', ',', '"', ' ']
-    return linha.replace(indesejados, '').split(':')
+    for item in indesejados:
+        linha = linha.replace(item, '')
+    return linha.split(':')
 
 def resume(founds):
-    print('#### SCAN RESUME ####')
+    print('########## SCAN RESUME ##########') # Imprimir no canal de erro
     for found in founds:
-        print(F'>>>  {found}')
+        print(f'\033[91m>>>  {found}\033[0m')
 
 
-white_list = ['false', 'metrics', 'OrgfalseId', 'DEV']
-black_list = ['false', 'metrics', 'OrgfalseId', 'DEV']
-founds=[]
+white_list = []
+black_list = []
+founds = []
 
 parser = argparse.ArgumentParser(description='Parser para criar argumentos recebidos pela cli.')
 
-parser.add_argument('caminho_do_arquivo', type=str, help='Caminho do arquivo a ser processado')
-parser.add_argument('--white_list', type=str, nargs='+', help='Palavras a receberem Bypass')
-parser.add_argument('--black_list', type=str, nargs='+', help='Palavras proibidas a serem detectadas')
+parser.add_argument('caminho_do_arquivo', type=str, help='Path do arquivo a ser processado')
+parser.add_argument('-wl', '--white_list', type=str, nargs='+', required=False, help='Lista de palavras a receberem Bypass')
+parser.add_argument('-bl', '--black_list', type=str, nargs='+', required=True, help='Lista de palavras indesejadas a serem detectadas')
 
 args = parser.parse_args()
 
 caminho_arquivo = args.caminho_do_arquivo
-#white_list = args.white_list
-#black_list = args.black_list
+white_list = args.white_list
+black_list = args.black_list
+
+print(white_list) # Teste
+print(black_list) # Teste
 
 try:
     with open(caminho_arquivo, 'r') as arquivo:
         for i, linha in enumerate (arquivo, 1):
-            
-            print(f' {i}: {linha}') # Imprime cada linha do arquivo scaneado
-
-            linha = scan_white_list(white_list, linha) #SCAN WHITE-LIST verficar se realmente é necessário retorno
-            scan_black_list(black_list, linha, i) #SCAN BLACK-LIST
+        
+            print(f' {i}: {linha}') 
+            linha = scan_white_list(white_list, linha)
+            scan_black_list(black_list, linha, i)
 
 except FileNotFoundError:
     print(f'O arquivo "{caminho_arquivo}" não foi encontrado.')
